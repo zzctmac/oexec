@@ -1,3 +1,3 @@
-module github.com/zhouzhichao/oexec
+module github.com/zzctmac/oexec
 
 go 1.12
