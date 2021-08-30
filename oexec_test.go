@@ -1,6 +1,7 @@
 package oexec
 
 import (
+	"os/exec"
 	"strings"
 	"sync"
 	"testing"
@@ -84,4 +85,17 @@ func TestParallel(t *testing.T) {
 	if elapsedTime.Seconds() > 3.1 || outs[2].Stderr == nil {
 		t.Fatalf("Incorrect output generated")
 	}
+}
+
+func TestSeriesWithCmdCallBack(t *testing.T) {
+	startTime := time.Now()
+	i := 0
+	outs := SeriesWithCmdCallBack(func(cmdStr string, cmd *exec.Cmd) {
+		i++
+	},"sleep 2s")
+	elapsedTime := time.Since(startTime)
+	if elapsedTime < 1 || outs[0].Stderr != nil || i !=1 {
+		t.Fatalf("Incorrect output generated")
+	}
+
 }

@@ -6,11 +6,22 @@ import (
 	"sync"
 )
 
+type CmdCallBack func(cmdStr string, cmd *exec.Cmd)
+
 // Series will execute specified cmds in series and return slice of Outputs
 func Series(cmds ...string) []*Output {
 	outputs := make([]*Output, len(cmds))
 	for index, cmd := range cmds {
 		outputs[index] = run(cmd)
+	}
+	return outputs
+}
+
+// Series will execute specified cmds in series and return slice of Outputs
+func SeriesWithCmdCallBack(cc CmdCallBack, cmds ...string) []*Output {
+	outputs := make([]*Output, len(cmds))
+	for index, cmd := range cmds {
+		outputs[index] = runWithCallBack(cmd, cc)
 	}
 	return outputs
 }
@@ -40,6 +51,20 @@ func run(cmd string) *Output {
 	cmdName, cmdArgs := processCmdStr(cmd)
 	outStruct := new(Output)
 	outStruct.Stdout, outStruct.Stderr = execute(cmdName, cmdArgs...)
+	return outStruct
+}
+
+// run will process the specified cmd, execute it and return the Output struct
+func runWithCallBack(cmd string, cc CmdCallBack) *Output {
+	cmdName, cmdArgs := processCmdStr(cmd)
+	outStruct := new(Output)
+	cmdPtr := exec.Command(cmdName, cmdArgs...)
+	cc(cmd, cmdPtr)
+	out, err :=  cmdPtr.Output()
+	if err != nil {
+	    out = nil
+	}
+	outStruct.Stdout, outStruct.Stderr = out, err
 	return outStruct
 }
 
